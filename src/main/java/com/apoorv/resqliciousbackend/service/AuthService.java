@@ -4,10 +4,14 @@ import com.apoorv.resqliciousbackend.dto.AuthRequest;
 import com.apoorv.resqliciousbackend.dto.AuthResponse;
 import com.apoorv.resqliciousbackend.dto.RegisterRequest;
 import com.apoorv.resqliciousbackend.entity.User;
+import com.apoorv.resqliciousbackend.exception.InvalidUsernamePasswordException;
+import com.apoorv.resqliciousbackend.exception.UserAlreadyExistsException;
 import com.apoorv.resqliciousbackend.jwt.JWTService;
 import com.apoorv.resqliciousbackend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -29,7 +33,12 @@ public class AuthService {
                 .role(request.getRole())
                 .build();
 
-        userRepository.save(user);
+        try{
+            userRepository.save(user);
+        }catch (DataIntegrityViolationException e){
+            throw new UserAlreadyExistsException(user.getEmail());
+        }
+
 
         String jwtToken = jwtService.generateToken(user);
 
@@ -38,7 +47,7 @@ public class AuthService {
                 .build();
     }
 
-    public AuthResponse authenticate(AuthRequest request) {
+    public AuthResponse login(AuthRequest request) {
         try{
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
@@ -46,7 +55,10 @@ public class AuthService {
                             request.getPassword()
                     )
             );
-        }catch (Exception e){
+        }catch (BadCredentialsException e){
+            throw new InvalidUsernamePasswordException();
+        }
+        catch (Exception e){
             System.out.println(e);
             throw e;
         }
