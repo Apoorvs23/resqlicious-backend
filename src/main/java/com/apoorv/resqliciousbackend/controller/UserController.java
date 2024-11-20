@@ -1,10 +1,12 @@
 package com.apoorv.resqliciousbackend.controller;
 
 import com.apoorv.resqliciousbackend.dto.CartDTO;
+import com.apoorv.resqliciousbackend.dto.OrderDTO;
 import com.apoorv.resqliciousbackend.dto.RestaurantDTO;
 import com.apoorv.resqliciousbackend.dto.UserDTO;
 import com.apoorv.resqliciousbackend.entity.User;
 import com.apoorv.resqliciousbackend.service.CartService;
+import com.apoorv.resqliciousbackend.service.OrderService;
 import com.apoorv.resqliciousbackend.service.RestaurantService;
 import com.apoorv.resqliciousbackend.service.UserDetailsService;
 import lombok.RequiredArgsConstructor;
@@ -25,6 +27,7 @@ public class UserController {
     private final UserDetailsService userDetailsService;
     private final RestaurantService restaurantService;
     private final CartService cartService;
+    private final OrderService orderService;
 
     @GetMapping("/{userId}")
     @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_USER')")
@@ -48,6 +51,13 @@ public class UserController {
     public ResponseEntity<CartDTO> getCartByUserId(@PathVariable long userId){
         CartDTO cartDTO = cartService.getCartByUserId(userId);
         return new ResponseEntity<>(cartDTO, HttpStatus.OK);
+    }
+
+    @GetMapping("/{userId}/orders")
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_USER')")
+    public ResponseEntity<OrderDTO> getOrderByUserId(@PathVariable long userId){
+        OrderDTO orderDTO = orderService.getOrderByUserId(userId);
+        return new ResponseEntity<>(orderDTO, HttpStatus.OK);
     }
 
 }
